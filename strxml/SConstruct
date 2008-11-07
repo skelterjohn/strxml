@@ -1,0 +1,37 @@
+lib = Dir('lib')
+build = Dir('build')
+src = Dir('src')
+inc = Dir('include')
+
+prefix = Dir(ARGUMENTS.get('prefix', '.'))
+prefix_lib = prefix.Dir('lib')
+prefix_inc = prefix.Dir('include')
+
+lib_paths = [lib]
+cpp_paths = [prefix_inc, inc]
+
+ccflags = ['-Wall', '-Werror']
+if 'debug' in COMMAND_LINE_TARGETS:
+	ccflags += ['-g']
+
+BuildDir(build, src, duplicate=0)
+
+build_sources = [build.File('strxml.cpp')]
+
+env = Environment(CPPPATH=cpp_paths, CCFLAGS=ccflags, LIBPATH=lib_paths)
+
+config = Configure(env)
+config.CheckCXXHeader('boost/shared_ptr.hpp')
+env = config.Finish()
+
+libstrxml = env.SharedLibrary(lib.File('libstrxml.so'), build_sources)
+
+Default(libstrxml)
+
+Alias('debug', libstrxml)
+
+if prefix != Dir('.'):
+	Alias('install', env.Install(prefix_lib, libstrxml))
+	Alias('install', env.Install(prefix_inc, inc.Entry('strxml.hpp')))
+
+
