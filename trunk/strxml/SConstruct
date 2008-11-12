@@ -18,7 +18,8 @@ BuildDir(build, src, duplicate=0)
 
 build_sources = [build.File('strxml.cpp')]
 
-env = Environment(CPPPATH=cpp_paths, CCFLAGS=ccflags, LIBPATH=lib_paths)
+env = Environment(tools = ["default", "tools"], toolpath = '.',
+                  CPPPATH=cpp_paths, CCFLAGS=ccflags, LIBPATH=lib_paths)
 
 config = Configure(env)
 config.CheckCXXHeader('boost/shared_ptr.hpp')
@@ -31,7 +32,13 @@ Default(libstrxml)
 Alias('debug', libstrxml)
 
 if prefix != Dir('.'):
-	Alias('install', env.Install(prefix_lib, libstrxml))
-	Alias('install', env.Install(prefix_inc, inc.Entry('strxml.hpp')))
+	Alias('install', env.InstallPerm(prefix_lib, libstrxml, 0644))
+	Alias('install', env.InstallPerm(prefix_inc, inc.Entry('strxml.hpp'), 0644))
 
+dist_files = [File(x) for x in """
+COPYING COPYING.LESSER SConstruct tools.py
+""".split()]
+dist_files += [inc.Entry('strxml.hpp')]
+dist_files += [src.Entry(build_source) for build_source in build_sources] 
 
+env.Alias('dist', env.DistTar('strxml.tar.gz', dist_files))
