@@ -20,12 +20,17 @@ build_sources = [build.File('strxml.cpp')]
 
 env = Environment(tools = ["default", "tools"], toolpath = '.',
                   CPPPATH=cpp_paths, CCFLAGS=ccflags, LIBPATH=lib_paths)
+import os
+shared_lib_suffix = ".so"
+if os.uname()[0] == "Darwin":
+	shared_lib_suffix = ".dylib"
+	env.Append(SHLINKFLAGS='-undefined dynamic_lookup')
 
 config = Configure(env)
 config.CheckCXXHeader('boost/shared_ptr.hpp')
 env = config.Finish()
 
-libstrxml = env.SharedLibrary(lib.File('libstrxml.so'), build_sources)
+libstrxml = env.SharedLibrary(lib.File('libstrxml'+shared_lib_suffix), build_sources)
 
 Default(libstrxml)
 
