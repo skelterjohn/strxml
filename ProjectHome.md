@@ -1,0 +1,1 @@
+A lightweight library to read XML from a C++ istream object.
